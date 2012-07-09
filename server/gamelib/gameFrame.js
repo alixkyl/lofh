@@ -15,8 +15,8 @@ module.exports=GameFrame=function(callback){
 	map=new mapFactory(GameCompiler,function(entities,elements){
 		gameEntities=entities;
 		gameElements=elements;
-		setInterval(map.simulate,10);
-		setInterval(saveState,10*1000);
+		setInterval(map.simulate,1000/60);
+		//setInterval(saveState,10*1000);
 		callback();
 	});
 	this.createEntity=function(data,callback){
@@ -46,7 +46,7 @@ module.exports=GameFrame=function(callback){
 			if(gameEntities[entities[ent]]){
 				result[entities[ent]]=gameEntities[entities[ent]].META();
 			}else{
-				result[ent]={'_id':0,'name':ent,'pattern':'cube'};
+				result[ent]={'_id':0,'name':ent,'pattern':'4fee4e24e885b8f805000001'};
 			}
 		}
 		return result;
@@ -66,7 +66,5 @@ module.exports=GameFrame=function(callback){
 		}
 		console.log('save DONE')
 	}
-	setInterval(map.simulate,10);
-	setInterval(saveState,60*1000);
 	return this;
 }

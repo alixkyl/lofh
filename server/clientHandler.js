@@ -47,7 +47,7 @@ this.close=function(id){
 var clientEvents={}
 clientEvents['SelectReady']=function(connection,data){
 console.log('SelectReady')
-connection.socket.emit('Gamesync',{'preload':gFrame.getPreloadSlotID(connection.slots),'more':{'ligths':{'b':'light1','c':'light2'}}});
+connection.socket.emit('Gamesync',{'preload':gFrame.getPreloadSlotID(connection.slots),'more':{'ligths':{'b':'4fee20c014b457c41100000c','c':'4fee20c014b457c41100000d'}}});
 	connection.socket.emit('Clientsync',{'func':'setCharacters','params':{'data':connection.slots}});
 	
 }
@@ -74,7 +74,7 @@ console.log('play')
 }
 clientEvents['GameReady']=function(connection){
 	console.log(Object.keys(connection.entity).length)
-	connection.socket.emit('Gamesync',{'objects':gFrame.getMETAObject(connection.entity.view),"more":{"avatar":connection.entity._id,'ligths':{'b':'light1','c':'light2'}}});
+	connection.socket.emit('Gamesync',{'objects':gFrame.getMETAObject(connection.entity.view),"more":{"avatar":connection.entity._id,'ligths':{'b':'4fee20c014b457c41100000c','c':'4fee20c014b457c41100000d'}}});
 	connection.socket.on('GameEvent', function (data) {
 		try{
 			connection.entity.zone.WorldRules[data.msg['func']](connection.entity,data.msg['data'],data.msg['timestamp']);
@@ -82,7 +82,13 @@ clientEvents['GameReady']=function(connection){
 	});
 	connection.ready=true;
 }
-
+clientEvents['ChatMSG']=function(connection,data){
+	for(conn in connections){
+		if(connections[conn].ready){
+			connections[conn].socket.emit('Clientsync',{'func':'chatMessage','params':data.msg,'timestamp':new Date().getTime()});
+		}
+	}
+}
 var update=function(){
 	for(conn in connections){
 		if(connections[conn].ready){

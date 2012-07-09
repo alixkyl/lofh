@@ -1,5 +1,5 @@
 var DB=require('../DBacces.js');
-var ZoneHandler=require('./zoneHandler.js');
+var ZH=require('./zoneHandler.js');
 var Object3D=require('./Object3D.js');
 module.exports=function(GameCompiler,callback){
 	GameCompiler.setMapHandler(this);
@@ -13,7 +13,7 @@ module.exports=function(GameCompiler,callback){
 		map.nbZones=0;
 		for(id in data.zones){
 			map.nbZones++;
-			map.zones[data.zones[id].id]=new ZoneHandler(data.zones[id]);
+			map.zones[data.zones[id].id]=new ZH.zoneHandler(data.zones[id]);
 		}
 		for(adj in data.adjacent){
 			a=data.adjacent[adj].a;
@@ -57,7 +57,7 @@ module.exports=function(GameCompiler,callback){
 	}
 	this.getZoneFromPosition=function(position){
 		for(zone in map.zones){
-			if(map.zones[zone].IsPointInside(position))
+			if(map.zones[zone].whereIs(position)==0)
 				return map.zones[zone]
 		}
 		return false

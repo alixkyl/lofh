@@ -19,6 +19,6 @@ LOH.WSocket=function(callback)
 		socket.emit('GameEvent', {msg:data,timestamp:new Date().getTime()});
 	};
 	//----------------------
-	socket.on('disconnect', function (data) {alert('Connection lost '+data)});
+	socket.on('disconnect', function (data) {});
 	socket.on('waiting', function (data) {callback();});
 }

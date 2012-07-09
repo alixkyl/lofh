@@ -2,7 +2,7 @@ LOH.Object3D=function(data){
 	this.id=data._id;
 	this.name=data.name;
 	this.position=new Vec3(0,0,0);
-	
+	console.log(data._id)
 	if(data.position)
 		this.position.copy(data.position);
 		
@@ -14,16 +14,27 @@ LOH.Object3D=function(data){
 	if(data.scale)
 		this.scale.copy(data.scale);
 	
-	this.mesh=LOH.PatternFactory(LOH.Ressources.getRessource({'type':'patterns','id':data.pattern},function(pattern){mesh=LOH.PatternFactory(pattern)}),id);
+	this.mesh=LOH.PatternFactory(LOH.Ressources.getRessource({'type':'patterns','id':data.pattern},function(pattern){this.mesh=LOH.PatternFactory(pattern,data._id)}),data._id);
 	this.mesh.position=this.position;
 	this.mesh.rotation=this.rotation;
 	this.mesh.scale=this.scale;
 	this.select=function(){
-		this.mesh.add(LOH.PatternFactory(LOH.Ressources.getRessource({'type':'patterns','id':'selection'},function(){}),id));
+		var meshS=LOH.PatternFactory(LOH.Ressources.getRessource({'type':'patterns','id':'4fee20be14b457c411000003'}
+		,bind(this,function(pattern){
+			var select=this.mesh.getChildByName("selection",true)
+			if(select)
+				this.mesh.remove(select);
+			var meshS=LOH.PatternFactory(pattern);
+			meshS.selection="selection";
+			this.mesh.add(meshS);
+		})),data._id);
+		meshS.name="selection";
+		this.mesh.add(meshS);
 	}
 	this.unselect=function(){
-		select=this.mesh.getChildByName("selection",true)
-		this.mesh.remove(select);
+		var select=this.mesh.getChildByName("selection",true)
+		if(select)
+			this.mesh.remove(select);
 	}
 	this.changeStand=function(stand){
 		action=this.mesh.actions[stand]
@@ -80,17 +91,18 @@ LOH.Entity=function(data){
 	if(data.move)
 		move.copy(data.move);
 	var rotationmove=data.rotationmove||0;
-	var speed=data.speed||0.01;
+	var speed=data.speed||0.1;
 	var rotationspeed=data.rotationspeed||0.001;
 	
-
 	this.update=function(dt){
 		var mat=new THREE.Matrix4().setRotationFromEuler(this.rotation,this.mesh.eulerOrder);
 		mat.rotateY(rotationmove*dt*rotationspeed);
 		this.rotation.getRotationFromMatrix( mat );
 		tmp_move=mat.crossVector(move);
 		tmp_move.w=0;
+		
 		if(tmp_move.length()>0){
+			tmp_move.normalize();
 			this.changeStand('walk');
 			// if(this.mesh.parent){
 				// var rayFront = new THREE.Ray( this.position.clone().addSelf(new THREE.Vector3(0,5,0)), tmp_move.clone().normalize() );
@@ -108,7 +120,7 @@ LOH.Entity=function(data){
 							// dist=(dist>0)?1:-1;
 						// tmp_move.y=dist;
 					// }
-					this.position.addSelf(tmp_move.multiplyScalar(dt*speed));
+					 this.position.addSelf(tmp_move.normalize().multiplyScalar(dt*speed));
 				// }
 			// }
 		}else{
@@ -127,7 +139,6 @@ LOH.Entity=function(data){
 		this.rotation.getRotationFromMatrix( mat );
 		tmp_move=mat.crossVector(move);
 		tmp_move.w=0;
-
 		this.position.addSelf(tmp_move.normalize().multiplyScalar(dt*speed))
 	}
 	//geter
@@ -137,28 +148,46 @@ LOH.Entity=function(data){
 	this.SetRotationMove=function(rotation){rotationmove=rotation;}
 	this.SetMove=function(mov){move=mov;}
 };
-LOH.DummyEntity={
-	id:1
-	,position:new Vec3()
-	,rotation:new Vec3()
-	,scale:new Vec3(1,1,1)
-	,move:new Vec4()
-	,pattern:'cube'
-};
+
 LOH.MapElement=function(data){
 	LOH.Object3D.call(this,data);
 	this.synchronize=function(syncdata,dt){}
 }
 LOH.PatternFactory=function(pattern,entId){
 	var mesh,geometry,materials;
-	if(pattern.geometry && pattern.materials){
-		geometry=LOH.Ressources.getRessource({'type':'geometries','id':pattern.geometry},function(geo){geometry=geo;});
-		materials=LOH.Ressources.getRessource({'type':'materials','id':pattern.materials},function(mat){materials=mat;});
-		mesh=new THREE.Mesh(geometry,materials);
+	
+	if(pattern.geometry){
+		
+		geometry=LOH.Ressources.getRessource({'type':'geometries','id':pattern.geometry}
+		,function(geo){
+			newMesh=new THREE.Mesh(geo,mesh.material);
+			mesh.position.set(pattern.position[0],pattern.position[1],pattern.position[2]);
+			if(pattern.rotation)
+				mesh.rotation.set(pattern.rotation[0],pattern.rotation[1],pattern.rotation[2]);
+			if(pattern.scale)
+				mesh.scale.set(pattern.scale[0],pattern.scale[1],pattern.scale[2]);
+			mesh.actions=pattern.actions||{};
+			mesh.animations=pattern.animations||{};
+			mesh.currentAnimation=0;
+			mesh.visible = pattern.visible||true;
+			mesh.doubleSided = pattern.doubleSided||false;
+			mesh.castShadow = pattern.castShadow||false;
+			mesh.receiveShadow = pattern.receiveShadow||false;
+			mesh.name=pattern.name;
+			mesh.entId=entId;
+	for(child in pattern.childs){
+		mesh.add(LOH.PatternFactory(pattern.childs[child],entId));
+	}
+		});
+		if( pattern.materials)
+			material=LOH.Ressources.getRessource({'type':'materials','id':pattern.materials}
+			,function(mat){
+				mesh.material=mat;
+			});
+		mesh=new THREE.Mesh(geometry,material);
 	}else{
 		mesh=new THREE.Object3D();
 	}
-	
 	if(pattern.position)
 		mesh.position.set(pattern.position[0],pattern.position[1],pattern.position[2]);
 	if(pattern.rotation)

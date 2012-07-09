@@ -27,8 +27,8 @@ LOH.thirdPersonCamera=function(world,input){
 	camera.position.z=10;
 	var pos= new Vec4(camera.position.x,0,camera.position.z,1);
 	
-	world.getAvatar().getMesh().lookAt( pos.clone().negate().addSelf(world.getAvatar().getPosition()))
-	camera.lookAt(world.getAvatar().getPosition());
+	world.setAvatarLookAt( pos.clone().negate().addSelf(world.getAvatarPosition()))
+	camera.lookAt(world.getAvatarPosition());
 	
 	this.update=function(delta){
 		
@@ -56,7 +56,7 @@ LOH.thirdPersonCamera=function(world,input){
 			mouseLDown=false;
 		}
 		if(input.mouseRDown){
-			world.getAvatar().getMesh().lookAt( pos.clone().negate().addSelf(world.getAvatar().getPosition()));
+			world.setAvatarLookAt( pos.clone().negate().addSelf(world.getAvatarPosition()));
 			dispatch['updateAvatarMove'](input);
 		}			
 		
@@ -72,9 +72,9 @@ LOH.thirdPersonCamera=function(world,input){
 			}
 			input.zoomCamera=0;
 		}
-		camera.position=world.getAvatar().getPosition().clone().addSelf(new Vec3(pos.x,(pos.lengthSq())/100,pos.z));
+		camera.position=world.getAvatarPosition().clone().addSelf(new Vec3(pos.x,(pos.lengthSq())/100,pos.z));
 		
-		camera.lookAt(world.getAvatar().getPosition());
+		camera.lookAt(world.getAvatarPosition());
 	}
 
 	this.getCamera=function(){return camera;}

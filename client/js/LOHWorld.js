@@ -2,23 +2,27 @@ LOH.World=function()
 {
 	scopeW=this;
 	this.scene=new THREE.Scene();
-
 	var objects={};
 	var avatar;
 	var selection;
 	this.reset=function(){
 		this.scene=new THREE.Scene();
-		
 		objects={};
 		avatar=0;
 		selection=0;
 	
 	}
-	
-	this.getAvatar=function(){
-		avatar=avatar||new LOH.Entity(LOH.DummyEntity);
-		return avatar;
+	this.getAvatarPosition=function(){
+		if(avatar)
+			return avatar.getPosition();
+		else
+			return new Vec3();
 	}
+	this.setAvatarLookAt=function(pos){
+		if(avatar)
+			return avatar.getMesh().lookAt(pos);
+	}
+
 	
 	dispatch['updateAvatarMove']=function(input){
 		var move=new Vec4();
@@ -57,23 +61,23 @@ LOH.World=function()
 	}
 	
 	this.changeSelection=function(mesh){
-		if(selection)
-			selection.unselect();
-		selection=objects[mesh.entId];
-		console.log(mesh.entId)
-		selection.select();
-		dispatch['GameEvent']({
-			"func":"target"
-			,"data":{"target":selection.id}
-		});
+		if(mesh.entId){
+			if(selection && selection.entId != mesh.entId)
+				selection.unselect();
+			if(!selection || selection.entId != mesh.entId){
+				selection=objects[mesh.entId];
+				console.log(mesh.entId)
+				selection.select();
+				dispatch['GameEvent']({
+					"func":"target"
+					,"data":{"target":selection.id}
+				});
+			}
+		}
 	}	
-	this.getSelection=function(){
-		selection=selection||new LOH.Entity(LOH.DummyEntity);
-		return selection;
-	}
 	this.update=function(dt){
 		for(num in objects)
-			objects[num].update(dt);
+			objects[num].update(dt);	
 	}
 	
 	this.load=function(which,callback){

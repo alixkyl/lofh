@@ -7,37 +7,37 @@
 LOH.View=function(webGlContext){
 	// scope=this;
 	var activ=false;
-	var GUI,camera,input;
-	var GUIProfile={
-		'LoadingScreen':{'GUI':LOH.LoadingGUI,'Camera':LOH.StaticCamera,'InitFunc':LoadingScreenInit}
-		,'SelectScreen':{'GUI':LOH.SelectScreenGUI,'Camera':LOH.SelectScreenCamera,'InitFunc':SelectScreenInit}
-		,'GameScreen':{'GUI':LOH.GameGUI,'Camera':LOH.thirdPersonCamera,'Input':LOH.Input,'InitFunc':GameScreenInit}
+	var UI,camera,input;
+	var UIProfile={
+		'LoadingScreen':{'UI':LOH.LoadingUI,'Camera':LOH.StaticCamera,'InitFunc':LoadingScreenInit}
+		,'SelectScreen':{'UI':LOH.SelectScreenUI,'Camera':LOH.SelectScreenCamera,'InitFunc':SelectScreenInit}
+		,'GameScreen':{'UI':LOH.GameUI,'Camera':LOH.thirdPersonCamera,'Input':LOH.Input,'InitFunc':GameScreenInit}
 	}
 	localDispatch={};
-	this.switchGUIProfil=function(mode,opt){
+	this.switchUIProfil=function(mode,opt){
 		activ=!activ;
 		localDispatch={};
-		if(GUI){
-			webGlContext.domElement.removeChild(GUI.domElement);
-			delete GUI;
+		if(UI){
+			UI.unbind(webGlContext.domElement);
+			delete UI;
 		}
-		GUI=new GUIProfile[mode].GUI()
-		webGlContext.domElement.appendChild(GUI.domElement);
+		UI=new UIProfile[mode].UI()
+		UI.bind(webGlContext.domElement)
 		if(input){
 			input.unbindListeners();
 			delete input;
 		}
-		if(GUIProfile[mode].Input)
-			input=new GUIProfile[mode].Input(webGlContext.domElement);
+		if(UIProfile[mode].Input)
+			input=new UIProfile[mode].Input(webGlContext.renderer.domElement);
 		if(camera){
 			world.scene.remove(camera.getCamera());
 			delete camera;
 		}
-		camera=new GUIProfile[mode].Camera(world,input);
+		camera=new UIProfile[mode].Camera(world,input);
 		
 		
-		if(GUIProfile[mode].InitFunc)
-			GUIProfile[mode].InitFunc.call(this,opt)
+		if(UIProfile[mode].InitFunc)
+			UIProfile[mode].InitFunc.call(this,opt)
 		animate();
 	}
 	
@@ -45,7 +45,7 @@ LOH.View=function(webGlContext){
 		world.reset();
 		world.scene.add(camera.getCamera());
 		world.load(opt,bind(this,function(){
-			this.switchGUIProfil(opt);
+			this.switchUIProfil(opt);
 		}));
 	}
 	function SelectScreenInit(opt){
@@ -53,7 +53,7 @@ LOH.View=function(webGlContext){
 		world.scene.add(camera.getCamera());
 		dispatch['ClientEvent']({"id":'SelectReady'})
 		localDispatch['setCharacters']=function(params){
-			GUI.init(params.data)
+			UI.init(params.data)
 		}
 		localDispatch['selectCharacter']=function(params){
 			if(params.old)
@@ -64,12 +64,12 @@ LOH.View=function(webGlContext){
 		}
 		dispatch['create']=bind(this,function(data){
 			dispatch['ClientEvent']({'id':'CreateCharacter','which':data})
-			this.switchGUIProfil('LoadingScreen','GameScreen');
+			this.switchUIProfil('LoadingScreen','GameScreen');
 			delete dispatch['create'];
 		});
 		dispatch['play']=bind(this,function(data){
 			dispatch['ClientEvent']({'id':'play','which':data})
-			this.switchGUIProfil('LoadingScreen','GameScreen');
+			this.switchUIProfil('LoadingScreen','GameScreen');
 			delete dispatch['play'];
 		});
 	}
@@ -77,6 +77,9 @@ LOH.View=function(webGlContext){
 		world.reset();
 		world.scene.add(camera.getCamera());
 		dispatch['ClientEvent']({"id":'GameReady'})
+		localDispatch['chatMessage']=function(params){
+			UI.chatMessage(params);
+		}
 	}
 	var world = new LOH.World();
 	
@@ -105,10 +108,8 @@ LOH.View=function(webGlContext){
 	window.addEventListener( 'resize', bind(this,onWindowResize), false );
 	function onWindowResize( event ) {
 	
-		GUI.domElement.width = window.innerWidth;
-		GUI.domElement.height = window.innerHeight;
 
-		camera.getCamera().aspect = GUI.domElement.width/ GUI.domElement.height;
+		camera.getCamera().aspect = webGlContext.domElement.width/ webGlContext.domElement.height;
 		camera.getCamera().updateProjectionMatrix();
 
 	}

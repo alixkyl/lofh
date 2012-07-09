@@ -7,7 +7,12 @@ LOH.Ressources=new function(){
 	,"materials":{}
 	,"lights":{}
 	,"audio":{}
-	,"defaults":{}
+	,"defaults":{
+		"patterns":{"geometry" : "4fee20be14b457c411000004","materials": "4fee4e24e885b8f80500001d" }
+		,"geometries":new THREE.CubeGeometry( 10,10, 10)
+		,"materials":new THREE.MeshLambertMaterial({ "color": 16711680})
+		,"lights":new THREE.PointLight( 16777215, 1)
+	}
 	}
 	
 	var waitinQueue={}	
@@ -47,10 +52,14 @@ LOH.Ressources=new function(){
 	
 	acknowledgeLoading=function(type,id,ressource){
 		ressources[type][id]=ressource;
-		for(n in waitinQueue[id]){
-			waitinQueue[id][n](ressource);
-			delete waitinQueue[id][n];
-		}
+		if(typeof waitinQueue[id] == 'function')
+			waitinQueue[id]()
+		else
+			for(n in waitinQueue[id]){
+				waitinQueue[id][n](ressource);
+				delete waitinQueue[id][n];
+			}
+		delete waitinQueue[id]
 	}
 	var urlBase = THREE.Loader.prototype.extractUrlBase( "/static/" );
 	function get_url( source_url, url_type ) {
@@ -112,11 +121,13 @@ LOH.Ressources=new function(){
 			if( counter['geometries'] == 0 && counter['textures'] == 0 ) {
 				if(typeof callbackFinished == 'function')
 					callbackFinished();
+					
 			}
 		};
 		// patterns
 		for ( dp in ress.patterns ){
-			ressources.patterns[dp]=ress.patterns[dp];
+			//ressources.patterns[dp]=ress.patterns[dp];
+			acknowledgeLoading('patterns',dp,ress.patterns[dp]);
 		}
 		// lights
 		for ( dl in ress.lights ) {

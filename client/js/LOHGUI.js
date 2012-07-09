@@ -8,6 +8,7 @@ LOH.WebGLBased=function(resolution){
 	this.renderer = new THREE.WebGLRenderer();
 	this.renderer.sortObjects = false;
 	this.renderer.setSize(this.domElement.width , this.domElement.height);
+	this.renderer.domElement.contentEditable=true;
 	this.domElement.appendChild( this.renderer.domElement );
 	
 	this.stats = new Stats();
@@ -23,17 +24,30 @@ LOH.WebGLBased=function(resolution){
 
 		this.renderer.setSize( this.domElement.width, this.domElement.height );
 	}
+	this.ondragOver = function ( event ) {
+		event.preventDefault()
+	}
+	this.ondrop = function ( event ) {
+		event.preventDefault();
+		var data=event.dataTransfer.getData("Text");
+		elem=document.getElementById(data)
+		// this.domElement.appendChild(elem);
+		elem.style.top=event.clientY+'px';
+		elem.style.left=event.clientX+'px';
+	}
+	this.renderer.domElement.addEventListener( 'drop', bind( this, this.ondrop ), false );
+	this.renderer.domElement.addEventListener( 'dragover', bind( this, this.ondragOver ), false );
+	
 }
 
-LOH.SelectScreenGUI=function(){
+LOH.SelectScreenUI=function(){
 	
-	this.domElement=document.createElement('div');
 	
 	var nameDiv=document.createElement('div');
 	nameDiv.style.position = 'absolute';
 	nameDiv.style.top = '10px';
 	nameDiv.style.right = window.innerWidth/2+'px';
-	this.domElement.appendChild(nameDiv);
+	
 	
 	var nameText=document.createElement('p');
 	nameText.innerHTML='NAME:';
@@ -55,7 +69,7 @@ LOH.SelectScreenGUI=function(){
 	createButton.style.right = '10px';
 	createButton.style.zIndex = 100;
 	createButton.style.display="none"
-	this.domElement.appendChild(createButton);
+	
 	
 	
 	var playButton=document.createElement('input');
@@ -67,13 +81,13 @@ LOH.SelectScreenGUI=function(){
 	playButton.style.right = '10px';
 	playButton.style.zIndex = 100;
 	playButton.style.display="none"
-	this.domElement.appendChild(playButton);
+	
 	
 	var charDiv=document.createElement('div');
 	charDiv.style.position = 'absolute';
 	charDiv.style.bottom = '10px';
 	charDiv.style.right = window.innerWidth/2+'px';
-	this.domElement.appendChild(charDiv);
+	
 	
 	var character1=document.createElement('input');
 	character1.type='button';
@@ -112,18 +126,126 @@ LOH.SelectScreenGUI=function(){
 			currentSlot=num;
 		}
 	}
-	
+	this.bind=function(domElement){
+		domElement.appendChild(nameDiv);
+		domElement.appendChild(playButton);
+		domElement.appendChild(createButton);
+		domElement.appendChild(charDiv);
+	}
+	this.unbind=function(domElement){
+		domElement.removeChild(nameDiv);
+		domElement.removeChild(playButton);
+		domElement.removeChild(createButton);
+		domElement.removeChild(charDiv);
+	}
 }
-LOH.LoadingGUI=function(){
-	this.domElement=document.createElement('div');
+LOH.LoadingUI=function(){
 	var nameText=document.createElement('p');
 	nameText.innerHTML="LOADING";
 	nameText.style.position = 'absolute';
 	nameText.style.bottom = window.innerHeight/2+'px';
 	nameText.style.right = window.innerWidth/2+'px';
-	this.domElement.appendChild(nameText);
-}
-LOH.GameGUI=function(){
-	this.domElement=document.createElement('div');
 	
+	this.bind=function(domElement){
+		domElement.appendChild(nameText);
+	}
+	this.unbind=function(domElement){
+		domElement.removeChild(nameText);
+	}
+}
+LOH.GameUI=function(){
+	
+	// this.domElement.style.position = 'absolute';
+	// this.domElement.style.top = '0px';
+	// this.domElement.style.left = '0px';
+	// this.domElement.style.width='100%'
+	// this.domElement.style.height='100%'
+	// this.domElement.style.display='none'
+    // // this.domElement.style.width=100%;
+	// // this.domElement.style. height=70px;
+
+	//this.domElement.style.overflow="hidden"
+	//*********************************************/
+	var playerInfo=document.createElement('div');
+
+	//*********************************************/
+	var actionBar=document.createElement('div');
+
+	//*********************************************/
+	var targetInfo=document.createElement('div');
+
+	//*********************************************/
+	chat=new Chat()
+	
+	this.bind=function(domElement){
+		domElement.appendChild(playerInfo);
+		domElement.appendChild(actionBar);
+		domElement.appendChild(targetInfo);
+		domElement.appendChild(chat.domElement);
+
+	}
+	this.unbind=function(domElement){
+		domElement.removeChild(playerInfo);
+		domElement.removeChild(actionBar);
+		domElement.removeChild(targetInfo);
+		domElement.removeChild(chat.domElement);
+	}
+	//*********************************************/
+	this.chatMessage=function(msg){	chat.chatMessage(msg)}
+	//*********************************************/
+
+	
+	
+}
+
+UIwindow=function(){
+	this.domElement=document.createElement('div');
+	this.domElement.style.display='block';
+	this.domElement.setAttribute('draggable', 'true');
+	this.ondrag = function ( event ) {
+		event.dataTransfer.effectAllowed = 'copy';
+		event.dataTransfer.setData("Text",event.target.id);
+	}
+	addEventListener( 'dragstart', bind( this, this.ondrag ), false );
+	this.domElement.className ='UIwindow';
+	this.onMouseDown = function ( event ) {
+		if ( this.domElement !== document ) {
+			this.domElement.focus();
+		}
+		event.stopPropagation();
+	};
+
+	this.onMouseUp = function ( event ) {
+		event.stopPropagation();
+	};
+	this.domElement.addEventListener( 'mousedown', bind( this, this.onMouseDown ), false );
+	this.domElement.addEventListener( 'mouseup', bind( this, this.onMouseUp ), false );
+}
+Chat=function(){
+	UIwindow.call(this);
+	this.domElement.id="chat";
+	var chatTextBox=document.createElement('div');
+	chatTextBox.className ='textBox';
+	this.domElement.appendChild(chatTextBox);
+	var chatTextInput=document.createElement('input');
+	chatTextInput.value="NAME";
+	chatTextInput.type='text';
+	chatTextInput.className ='textInput';
+	this.domElement.appendChild(chatTextInput);
+	
+	this.chatMessage=function(msg){
+		var msgln=document.createElement('pre');
+		msgln.innerHTML=msg;
+		chatTextBox.appendChild(msgln);
+	}
+	
+	this.sendMessage=function(event){
+		event.stopPropagation();
+		if(chatTextInput.value && event.which==13){
+			dispatch['ClientEvent']({'id':'ChatMSG','msg':chatTextInput.value})
+			console.log(chatTextInput.value)
+			chatTextInput.value="";
+		}
+	}
+	chatTextInput.addEventListener( 'keypress', bind( this,this.sendMessage) , true );
 }

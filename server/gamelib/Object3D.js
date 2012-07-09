@@ -1,19 +1,13 @@
+var mPhys=require('./microphysic.js');
 Object3D=function(){
 	//***********************
 	this.zone;
 	this.position=new THREE.Vector3();
 	this.name="NAME";
 	//******************
-	var box_geometry = new THREE.CubeGeometry( 10, 10, 10 )
-	this.mesh = new THREE.Mesh(box_geometry);
 	
-
 	this.rotation= new THREE.Vector3();
 	this.scale= new THREE.Vector3(1,1,1);
-	
-	this.mesh.position=this.position;
-	this.mesh.rotation=this.rotation;
-	this.mesh.scale=this.scale;
 	
 
 	this.activ=false;
@@ -53,7 +47,7 @@ Mobile=function(){
 		,'rotationmove':this.rotationmove
 		}
 	}
-	this.speed=0.01
+	this.speed=0.1
 	this.rotationspeed=0.001;
 	this.rotationmove=0;
 	this.move=new THREE.Vector4();
@@ -89,6 +83,11 @@ exports.buildObjectFromData=function(data){
 	ent.scale=data.scale;
 	ent.type= data.type;
 	ent.pattern=data.pattern;
+	// if(ent.pattern == 'ground')
+		// ent.body=new mPhys.vphy.AABB({ restitution : 0,width : 1732,height: 1,depth : 1732});
+	// else 
+		// ent.body=new mPhys.vphy.Sphere({ restitution : 0,radius:10});
+	// ent.body.setPosition(ent.position.x,ent.position.y,ent.position.z)
 	return ent;
 }
 //**************************************************

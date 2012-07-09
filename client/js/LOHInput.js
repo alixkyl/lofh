@@ -1,6 +1,6 @@
 
 LOH.Input=function(domElement){
-	
+	this.focus=true;
 	this.forward = false;
 	this.backward = false;
 	this.left = false;
@@ -74,7 +74,8 @@ LOH.Input=function(domElement){
 			//event.preventDefault();
 			event.stopPropagation();
 		try{
-			keyMap[event.which].onKeyDown.call(this);
+			// if(this.focus)
+				keyMap[event.which].onKeyDown.call(this);
 		}catch(err){}
 	}
 
@@ -82,7 +83,8 @@ LOH.Input=function(domElement){
 			//event.preventDefault();
 			event.stopPropagation();
 		try{
-			keyMap[event.which].onKeyUp.call(this);
+			// if(this.focus)
+				keyMap[event.which].onKeyUp.call(this);
 		}catch(err){}
 	}
 	
@@ -90,7 +92,6 @@ LOH.Input=function(domElement){
 	//----------------------------------------------------------
 	//-----------------------------------------------------------
 	this.domElement = ( domElement !== undefined ) ? domElement : document;
-	this.domElement.oncontextmenu=function(){return false;}
 	this.mouseX = 0;
 	this.mouseY = 0;
 	
@@ -103,18 +104,20 @@ LOH.Input=function(domElement){
 	this.mouseLDown = false;
 	
 	this.mousewheel = function ( event ) {
-		event.preventDefault();
-		event.stopPropagation();
-		if(event.wheelDelta)
-			if (event.wheelDelta>0)
-				this.zoomCamera=-1;
+		if(this.focus){
+			event.preventDefault();
+			event.stopPropagation();
+			if(event.wheelDelta)
+				if (event.wheelDelta>0)
+					this.zoomCamera=-1;
+				else
+					this.zoomCamera=1;
 			else
-				this.zoomCamera=1;
-		else
-			if (event.detail>0)
-				this.zoomCamera=1;
-			else
-				this.zoomCamera=-1;
+				if (event.detail>0)
+					this.zoomCamera=1;
+				else
+					this.zoomCamera=-1;
+		}
 	}
 	
 	this.onMouseDown = function ( event ) {
@@ -124,8 +127,8 @@ LOH.Input=function(domElement){
 
 		}
 
-		event.preventDefault();
-		event.stopPropagation();
+		// event.preventDefault();
+		// event.stopPropagation();
 
 		switch ( event.button ) {
 			case 0:
@@ -139,8 +142,8 @@ LOH.Input=function(domElement){
 	};
 
 	this.onMouseUp = function ( event ) {
-		event.preventDefault();
-		event.stopPropagation();
+		// event.preventDefault();
+		// event.stopPropagation();
 
 		switch ( event.button ) {
 
@@ -155,7 +158,22 @@ LOH.Input=function(domElement){
 		}
 		
 	};
-	
+	this.onfocus=function() {
+        this.focus=true;
+		console.log('focus')
+    };
+    this.onblur=function() {
+		console.log('blur')
+        this.focus=false;
+		this.forward = false;
+		this.backward = false;
+		this.left = false;
+		this.right = false;
+		this.mouseDragOn = false;
+		this.mouseRDown = false;
+		this.mouseLDown = false;
+		dispatch['updateAvatarMove'](this);
+    };
 	this.onMouseMove = function ( event ) {
 
 		if ( this.domElement === document ) {
@@ -177,8 +195,11 @@ LOH.Input=function(domElement){
 	
 	this.domElement.addEventListener( 'contextmenu', function ( event ) { event.preventDefault(); }, false );
 	
-	window.addEventListener( 'keydown', bind( this,this.onKeyDown) , true );
-	window.addEventListener( 'keyup', bind( this,this.onKeyUp) , true );
+	this.domElement.addEventListener( 'keydown', bind( this,this.onKeyDown) , true );
+	this.domElement.addEventListener( 'keyup', bind( this,this.onKeyUp) , true );
+	
+	this.domElement.addEventListener( 'focus', bind( this,this.onfocus) , false );
+	this.domElement.addEventListener( 'blur', bind( this,this.onblur) , false );
 	
 	
 	this.domElement.addEventListener( mousewheelevt, bind( this, this.mousewheel ), false );

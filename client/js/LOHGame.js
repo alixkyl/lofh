@@ -5,7 +5,7 @@ LOH.Game=function(){
 	document.body.appendChild(webGlContext.domElement);
 	var socket=new LOH.WSocket(function(){
 		var view=new LOH.View(webGlContext);
-		view.switchGUIProfil('LoadingScreen','SelectScreen');
+		view.switchUIProfil('LoadingScreen','SelectScreen');
 	});
 	
 }
