@@ -14,7 +14,13 @@ LOH.Object3D=function(data){
 	if(data.scale)
 		this.scale.copy(data.scale);
 	
-	this.mesh=LOH.PatternFactory(LOH.Ressources.getRessource({'type':'patterns','id':data.pattern},function(pattern){this.mesh=LOH.PatternFactory(pattern,data._id)}),data._id);
+	this.mesh=LOH.PatternFactory(LOH.Ressources.getRessource({'type':'patterns','id':data.pattern}
+		,bind(this,function(pattern){
+			var parent=this.mesh.parent
+			parent.remove(this.mesh)
+			this.mesh=LOH.PatternFactory(pattern,data._id)
+			parent.add(this.mesh);
+		})),data._id);
 	this.mesh.position=this.position;
 	this.mesh.rotation=this.rotation;
 	this.mesh.scale=this.scale;
@@ -161,28 +167,48 @@ LOH.PatternFactory=function(pattern,entId){
 		geometry=LOH.Ressources.getRessource({'type':'geometries','id':pattern.geometry}
 		,function(geo){
 			newMesh=new THREE.Mesh(geo,mesh.material);
-			mesh.position.set(pattern.position[0],pattern.position[1],pattern.position[2]);
-			if(pattern.rotation)
-				mesh.rotation.set(pattern.rotation[0],pattern.rotation[1],pattern.rotation[2]);
-			if(pattern.scale)
-				mesh.scale.set(pattern.scale[0],pattern.scale[1],pattern.scale[2]);
-			mesh.actions=pattern.actions||{};
-			mesh.animations=pattern.animations||{};
-			mesh.currentAnimation=0;
-			mesh.visible = pattern.visible||true;
-			mesh.doubleSided = pattern.doubleSided||false;
-			mesh.castShadow = pattern.castShadow||false;
-			mesh.receiveShadow = pattern.receiveShadow||false;
-			mesh.name=pattern.name;
-			mesh.entId=entId;
-	for(child in pattern.childs){
-		mesh.add(LOH.PatternFactory(pattern.childs[child],entId));
-	}
+			newMesh.position.copy(mesh.position);
+			newMesh.rotation.copy(mesh.rotation);
+			newMesh.scale.copy(mesh.scale);
+			newMesh.actions=mesh.actions||{};
+			newMesh.animations=mesh.animations||{};
+			newMesh.currentAnimation=mesh.currentAnimation;
+			newMesh.visible = mesh.visible||true;
+			newMesh.doubleSided = mesh.doubleSided||false;
+			newMesh.castShadow = mesh.castShadow||false;
+			newMesh.receiveShadow = mesh.receiveShadow||false;
+			newMesh.name=mesh.name;
+			newMesh.entId=mesh.entId;
+			for(child in mesh.children){
+				newMesh.add(mesh.children[child]);
+			}
+			var parent=mesh.parent;
+			mesh.parent.remove(mesh)
+			parent.add(newMesh)
 		});
 		if( pattern.materials)
 			material=LOH.Ressources.getRessource({'type':'materials','id':pattern.materials}
 			,function(mat){
-				mesh.material=mat;
+				newMesh=new THREE.Mesh(mesh.geometrie,mat);
+				newMesh.position.copy(mesh.position);
+				newMesh.rotation.copy(mesh.rotation);
+				newMesh.scale.copy(mesh.scale);
+				newMesh.actions=mesh.actions||{};
+				newMesh.animations=mesh.animations||{};
+				newMesh.currentAnimation=mesh.currentAnimation;
+				newMesh.visible = mesh.visible||true;
+				newMesh.doubleSided = mesh.doubleSided||false;
+				newMesh.castShadow = mesh.castShadow||false;
+				newMesh.receiveShadow = mesh.receiveShadow||false;
+				newMesh.name=mesh.name;
+				newMesh.entId=mesh.entId;
+				for(child in mesh.children){
+					newMesh.add(mesh.children[child]);
+				}
+				var parent=mesh.parent;
+				console.log(mesh.entId)
+				mesh.parent.remove(mesh)
+				parent.add(newMesh)
 			});
 		mesh=new THREE.Mesh(geometry,material);
 	}else{
