@@ -31,7 +31,6 @@ LOH.thirdPersonCamera=function(world,input){
 	camera.lookAt(world.getAvatarPosition());
 	
 	this.update=function(delta){
-		
 		if (input.mouseDragOn){
 			var mat=new THREE.Matrix4();
 			mat.rotateY((input.downX - input.mouseX)*0.5*2*Math.PI/360);
@@ -49,7 +48,11 @@ LOH.thirdPersonCamera=function(world,input){
 				var intersects = ray.intersectObjects( world.scene.__objects );
 
 				if ( intersects.length > 0 ) {
-					world.changeSelection(intersects[ 0 ].object)
+					for(i=0;i<intersects.length;i++)
+						if(intersects[ 0 ].object.visible){
+							world.changeSelection(intersects[ 0 ].object)
+							break;
+						}
 				}
 			}
 		}else{

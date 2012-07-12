@@ -9,8 +9,7 @@ LOH.World=function()
 		this.scene=new THREE.Scene();
 		objects={};
 		avatar=0;
-		selection=0;
-	
+		selection=0;	
 	}
 	this.getAvatarPosition=function(){
 		if(avatar)
@@ -62,18 +61,26 @@ LOH.World=function()
 	
 	this.changeSelection=function(mesh){
 		if(mesh.entId){
-			if(selection && selection.entId != mesh.entId)
-				selection.unselect();
-			if(!selection || selection.entId != mesh.entId){
-				selection=objects[mesh.entId];
-				console.log(mesh.entId)
-				selection.select();
-				dispatch['GameEvent']({
-					"func":"target"
-					,"data":{"target":selection.id}
-				});
+			if(selection.id != mesh.entId){
+				if(selection)
+					selection.select(false);
+				if(objects[mesh.entId].selectable){
+					selection=objects[mesh.entId];
+					console.log(mesh.entId)
+					selection.select(true);
+				}else{
+					selection=0
+				}
 			}
+		}else{
+			selection.unselect();
+			selection=0;
 		}
+		dispatch['GameEvent']({
+			"func":"target"
+			,"data":{"target":selection.id||0}
+		});
+		
 	}	
 	this.update=function(dt){
 		for(num in objects)
@@ -85,6 +92,7 @@ LOH.World=function()
 	}
 	
 	var addEntity=function(data){
+		data.selectable=true;
 		ent=new LOH.Entity(data);
 		objects[data._id]=ent;
 		scopeW.scene.add(ent.getMesh());
@@ -93,7 +101,7 @@ LOH.World=function()
 		elem=new LOH.MapElement(data);
 		objects[data._id]=elem;
 		scopeW.scene.add(elem.getMesh());
-		if(data.pattern=="ground"){
+		if(data.pattern=="4fee4e24e885b8f80500000e"){
 			hexa=[[0,0,0]]
 			for (i = 0; i < 6; i++) {
 			  hexa.push([ Math.sin(2 * Math.PI * i / 6),0, Math.cos(2 * Math.PI * i / 6)]);
@@ -141,8 +149,7 @@ LOH.World=function()
 				avatar=objects[data.more.avatar];
 			
 			for(id in data.more.ligths){
-				ligth=LOH.Ressources.getRessource({'type':'lights','id':data.more.ligths[id]},function(){})
-				scopeW.scene.add(ligth)
+				LOH.Ressources.getRessource({'type':'lights','id':data.more.ligths[id]},function(ligth){scopeW.scene.add(ligth)})
 			}
 			
 		}

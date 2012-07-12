@@ -276,7 +276,7 @@ HexaBuilding{
 		amélioration:{
 			mur d'enceinte
 			,route
-			}
+		}
 		buildings:{
 			exploitation.buildings
 			,habitation

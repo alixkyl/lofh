@@ -98,6 +98,7 @@ LOH.View=function(webGlContext){
 			world.update(dt)
 			webGlContext.renderer.render( world.scene,camera.getCamera());
 			webGlContext.stats.update();
+			THREE.SceneUtils.traverseHierarchy( world.scene, function ( node ) { if ( node instanceof THREE.LOD ) node.update( camera.getCamera() ) } );
 		}else{
 			activ=true
 		}

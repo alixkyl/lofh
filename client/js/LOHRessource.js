@@ -1,18 +1,21 @@
 LOH.Ressources=new function(){
 	scope=this;
 	var ressources={ 
-	"patterns":{}
-	,"geometries":{}
-	,"textures": {}
-	,"materials":{}
-	,"lights":{}
-	,"audio":{}
-	,"defaults":{
-		"patterns":{"geometry" : "4fee20be14b457c411000004","materials": "4fee4e24e885b8f80500001d" }
-		,"geometries":new THREE.CubeGeometry( 10,10, 10)
-		,"materials":new THREE.MeshLambertMaterial({ "color": 16711680})
-		,"lights":new THREE.PointLight( 16777215, 1)
-	}
+		"patterns":{
+			"default":{"geometry" : "default","materials": "default" }
+		}
+		,"geometries":{
+			"default":new THREE.CubeGeometry( 10,10, 10)
+		}
+		,"textures": {}
+		,"materials":{
+			"default":new THREE.MeshLambertMaterial({ "color": 16711680})
+		}
+		,"lights":{
+			"default":new THREE.PointLight( 16777215, 1)
+		}
+		,"audio":{}
+		,"defaults":{}
 	}
 	
 	var waitinQueue={}	
@@ -20,14 +23,13 @@ LOH.Ressources=new function(){
 	this.getRessource=function(which,callback){
 		if(which.type){
 			if(ressources[which.type][which.id]){
-				return ressources[which.type][which.id];
+				callback( ressources[which.type][which.id]);
 			}else{
 				if(!waitinQueue[which.id]){
 					waitinQueue[which.id]=new Array();
 				}
 				waitinQueue[which.id].push(callback);
 				dispatch['ressourceQuery'](which.id);
-				return ressources['defaults'][which.type];
 			}
 		}else{
 			waitinQueue[which]=callback;
@@ -37,12 +39,21 @@ LOH.Ressources=new function(){
 	
 	this.reset=function(){
 		ressources={ 
-		"patterns":{}
-		,"geometries":{}
-		,"materials":{}
-		,"lights":{}
-		,"audio":{}
-		,"defaults":{}
+			"patterns":{
+				"default":{"geometry" : "default","materials": "default" }
+			}
+			,"geometries":{
+				"default":new THREE.CubeGeometry( 10,10, 10)
+			}
+			,"textures": {}
+			,"materials":{
+				"default":new THREE.MeshLambertMaterial({ "color": 16711680})
+			}
+			,"lights":{
+				"default":new THREE.PointLight( 16777215, 1)
+			}
+			,"audio":{}
+			,"defaults":{}
 		}
 	}
 	
