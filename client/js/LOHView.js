@@ -80,6 +80,9 @@ LOH.View=function(webGlContext){
 		localDispatch['chatMessage']=function(params){
 			UI.chatMessage(params);
 		}
+		localDispatch['setAvatarInfo']=function(params){
+			UI.setAvatarInfo(params);
+		}
 	}
 	var world = new LOH.World();
 	
@@ -98,6 +101,7 @@ LOH.View=function(webGlContext){
 			world.update(dt)
 			webGlContext.renderer.render( world.scene,camera.getCamera());
 			webGlContext.stats.update();
+			UI.update();
 			THREE.SceneUtils.traverseHierarchy( world.scene, function ( node ) { if ( node instanceof THREE.LOD ) node.update( camera.getCamera() ) } );
 		}else{
 			activ=true

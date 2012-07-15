@@ -57,7 +57,7 @@ DummyEntity={
 	,rotation:new THREE.Vector3()
 	,scale:new THREE.Vector3(1,1,1)
 	,name:'NAME'
-	,pattern:'Player'
+	,pattern:'4fee20be14b457c411000002'
 	,type:'Character'
 };
 clientEvents['CreateCharacter']=function(connection,data){

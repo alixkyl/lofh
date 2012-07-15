@@ -16,7 +16,7 @@ module.exports=GameFrame=function(callback){
 		gameEntities=entities;
 		gameElements=elements;
 		setInterval(map.simulate,1000/60);
-		//setInterval(saveState,10*1000);
+		setInterval(saveState,10*1000);
 		callback();
 	});
 	this.createEntity=function(data,callback){

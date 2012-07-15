@@ -79,7 +79,6 @@ exports.buildObjectFromData=function(data){
 	ent.zone=data.zone;
 	ent.position=data.position;
 	ent._id=data._id;
-	console.log(ent._id,":",data.position.y)
 	ent.rotation=data.rotation;
 	ent.scale=data.scale;
 	ent.type= data.type;

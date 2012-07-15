@@ -209,12 +209,12 @@ HarvestPoint=function(data){
 	type:{'forage','carrière','champ'}
 
 	dommages:liste{
-		leger:{seuil:10,nb:6}
-		profond:{seuil:20,nb:3}
-		grave:{seuil:30,nb:2}
-		mortelle:{seuil:40,nb:1}
+		light:{seuil:10,nb:6}
+		deep:{seuil:20,nb:3}
+		heavy:{seuil:30,nb:2}
+		deadly:{seuil:40,nb:1}
 	}
-	amélioration:liste{solidité:{},rendement:{},qualité:{},quantité:{},actions:{}}
+	amélioration:liste{solidity:{},rate:{},quality:{},quantity:{},actions:{}}
 	//****************************
 	this.addInteraction('inspecter','inspecter'
 	,function(params,process,callback){process(params,callback);}

@@ -3,11 +3,13 @@ LOH.World=function()
 	scopeW=this;
 	this.scene=new THREE.Scene();
 	var objects={};
+	var hitBoxes=[];
 	var avatar;
 	var selection;
 	this.reset=function(){
 		this.scene=new THREE.Scene();
 		objects={};
+		hitBoxes=[];
 		avatar=0;
 		selection=0;	
 	}
@@ -59,28 +61,37 @@ LOH.World=function()
 		});
 	}
 	
-	this.changeSelection=function(mesh){
-		if(mesh.entId){
-			if(selection.id != mesh.entId){
-				if(selection)
-					selection.select(false);
-				if(objects[mesh.entId].selectable){
-					selection=objects[mesh.entId];
-					console.log(mesh.entId)
-					selection.select(true);
-				}else{
-					selection=0
+	this.changeSelection=function(ray){
+		var intersects = ray.intersectObjects( hitBoxes );
+
+		if ( intersects.length > 0 ) {
+			var mesh=intersects[0].object;
+			if(mesh.entId){
+				if(selection.id != mesh.entId){
+					if(selection)
+						selection.select(false);
+					if(objects[mesh.entId].selectable){
+						selection=objects[mesh.entId];
+						console.log(mesh.entId)
+						selection.select(true);
+					}else{
+						selection=0
+					}
 				}
+			}else{
+				selection.select(false);
+				selection=0;
 			}
+			dispatch['GameEvent']({
+				"func":"target"
+				,"data":{"target":selection.id||0}
+			});
 		}else{
-			selection.unselect();
-			selection=0;
+			if(selection){
+				selection.select(false);
+				selection=0;
+			}
 		}
-		dispatch['GameEvent']({
-			"func":"target"
-			,"data":{"target":selection.id||0}
-		});
-		
 	}	
 	this.update=function(dt){
 		for(num in objects)
@@ -96,6 +107,7 @@ LOH.World=function()
 		ent=new LOH.Entity(data);
 		objects[data._id]=ent;
 		scopeW.scene.add(ent.getMesh());
+		hitBoxes.push(ent.hitbox);
 	}
 	var addMapElement=function(data){
 		elem=new LOH.MapElement(data);
@@ -129,7 +141,7 @@ LOH.World=function()
 				else
 					addEntity(ent);
 			}else{
-				if((tmp!=avatar)||(new Vec3().copy(ent.position).subSelf(tmp.getPosition()).length()>10)){
+				if((tmp!=avatar)||(new Vec3().copy(ent.position).subSelf(tmp.getPosition()).length()>(tmp.speed*dt))){
 					tmp.synchronize(ent,dt);
 				}
 			}
@@ -145,8 +157,10 @@ LOH.World=function()
 		}
 		if(data.more){
 		console.log(data.more.avatar)
-			if(data.more.avatar)
+			if(data.more.avatar){
 				avatar=objects[data.more.avatar];
+				dispatch['Clientsync']({'func':'setAvatarInfo','params':avatar})
+			}
 			
 			for(id in data.more.ligths){
 				LOH.Ressources.getRessource({'type':'lights','id':data.more.ligths[id]},function(ligth){scopeW.scene.add(ligth)})

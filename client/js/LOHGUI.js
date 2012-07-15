@@ -9,6 +9,7 @@ LOH.WebGLBased=function(resolution){
 	this.renderer.sortObjects = false;
 	this.renderer.setSize(this.domElement.width , this.domElement.height);
 	this.renderer.domElement.contentEditable=true;
+	this.renderer.domElement.style.cursor='default';
 	this.domElement.appendChild( this.renderer.domElement );
 	
 	this.stats = new Stats();
@@ -31,7 +32,6 @@ LOH.WebGLBased=function(resolution){
 		event.preventDefault();
 		var data=event.dataTransfer.getData("Text");
 		elem=document.getElementById(data)
-		// this.domElement.appendChild(elem);
 		elem.style.top=event.clientY+'px';
 		elem.style.left=event.clientX+'px';
 	}
@@ -138,6 +138,7 @@ LOH.SelectScreenUI=function(){
 		domElement.removeChild(createButton);
 		domElement.removeChild(charDiv);
 	}
+	this.update=function(){ }
 }
 LOH.LoadingUI=function(){
 	var nameText=document.createElement('p');
@@ -152,6 +153,7 @@ LOH.LoadingUI=function(){
 	this.unbind=function(domElement){
 		domElement.removeChild(nameText);
 	}
+	this.update=function(){ }
 }
 LOH.GameUI=function(){
 	
@@ -166,34 +168,33 @@ LOH.GameUI=function(){
 
 	//this.domElement.style.overflow="hidden"
 	//*********************************************/
-	var playerInfo=document.createElement('div');
-
-	//*********************************************/
-	var actionBar=document.createElement('div');
 
 	//*********************************************/
 	var targetInfo=document.createElement('div');
 
 	//*********************************************/
 	chat=new Chat()
-	
+	Pinfo=new PlayerInfo()
+	aBar=new SlotBar()
 	this.bind=function(domElement){
-		domElement.appendChild(playerInfo);
-		domElement.appendChild(actionBar);
-		domElement.appendChild(targetInfo);
 		domElement.appendChild(chat.domElement);
+		domElement.appendChild(Pinfo.domElement);
+		domElement.appendChild(aBar.domElement);
 
 	}
 	this.unbind=function(domElement){
-		domElement.removeChild(playerInfo);
-		domElement.removeChild(actionBar);
-		domElement.removeChild(targetInfo);
 		domElement.removeChild(chat.domElement);
+		domElement.removeChild(Pinfo.domElement);
+		domElement.removeChild(aBar.domElement);
 	}
 	//*********************************************/
 	this.chatMessage=function(msg){	chat.chatMessage(msg)}
+	this.setAvatarInfo=function(src){	Pinfo.setSrc(src)}
 	//*********************************************/
-
+	this.update=function(){ 
+		Pinfo.update();
+		aBar.update();
+	}
 	
 	
 }
@@ -203,8 +204,19 @@ UIwindow=function(){
 	this.domElement.style.display='block';
 	this.domElement.setAttribute('draggable', 'true');
 	this.ondrag = function ( event ) {
-		event.dataTransfer.effectAllowed = 'copy';
+		event.dataTransfer.effectAllowed = 'all';
+		event.dataTransfer.dropEffect='move';
 		event.dataTransfer.setData("Text",event.target.id);
+	}
+	this.ondragOver = function ( event ) {
+		event.preventDefault()
+	}
+	this.ondrop = function ( event ) {
+		event.preventDefault();
+		var data=event.dataTransfer.getData("Text");
+		elem=document.getElementById(data)
+		elem.style.top=event.clientY+'px';
+		elem.style.left=event.clientX+'px';
 	}
 	addEventListener( 'dragstart', bind( this, this.ondrag ), false );
 	this.domElement.className ='UIwindow';
@@ -220,6 +232,8 @@ UIwindow=function(){
 	};
 	this.domElement.addEventListener( 'mousedown', bind( this, this.onMouseDown ), false );
 	this.domElement.addEventListener( 'mouseup', bind( this, this.onMouseUp ), false );
+	this.domElement.addEventListener( 'drop', bind( this, this.ondrop ), false );
+	this.domElement.addEventListener( 'dragover', bind( this, this.ondragOver ), false );
 }
 Chat=function(){
 	UIwindow.call(this);
@@ -249,3 +263,61 @@ Chat=function(){
 	}
 	chatTextInput.addEventListener( 'keypress', bind( this,this.sendMessage) , true );
 }
+PlayerInfo=function(){
+	UIwindow.call(this);
+	var infoSrc;
+	this.domElement.id="playerInfo";
+	var nameText=document.createElement('p');
+	nameText.innerHTML='NAME:';
+	this.domElement.appendChild(nameText);
+	this.update=function(){
+		if(infoSrc){
+			nameText.innerHTML=infoSrc.name||"";
+	
+		}
+	}
+	this.setSrc=function(src){
+		infoSrc=src;
+	
+		this.update();
+	}
+	;
+
+}
+SlotBar=function(){
+	UIwindow.call(this);
+	this.domElement.id="ActionBar";
+
+	this.update=function(){
+	
+	
+	
+	}
+	this.setSrc=function(src){
+	
+	
+		this.update();
+	}
+	var ButtonBar=document.createElement('div');
+	var slots=[];
+	for(i=0;i<5;i++){
+		slots[i]=document.createElement('img');
+		slots[i].src='/static/textures/minecraft/grass.png';
+		slots[i].setAttribute('draggable', 'false');
+		slots[i].ondragOver = function ( event ) {
+			event.preventDefault()
+		}
+		slots[i].ondrop = function ( event ) {
+			event.preventDefault();
+			var data=event.dataTransfer.getData("Text");
+			elem=document.getElementById(data)
+			if(elem.className=='actionButton'){
+				elem.style.top=event.clientY+'px';
+				elem.style.left=event.clientX+'px';
+			}
+		}
+		ButtonBar.appendChild(slots[i]);
+	}
+	this.domElement.appendChild(ButtonBar);
+}
+

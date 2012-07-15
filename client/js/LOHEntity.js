@@ -20,9 +20,10 @@ LOH.Object3D=function(data){
 	this.mesh.rotation=this.rotation;
 	this.mesh.scale=this.scale;
 	this.mesh.entId=this.id;
+	this.hitbox;
 	LOH.Ressources.getRessource({'type':'patterns','id':"default"}
 	,bind(this,function(pattern){
-		new LOH.PatternFactory(pattern,data._id,bind(this,function(mesh){this.mesh.addLevel(mesh,20000)}));
+		new LOH.PatternFactory(pattern,data._id,bind(this,function(mesh){this.mesh.addLevel(mesh,20000);this.hitbox=mesh}));
 	}));
 	
 	LOH.Ressources.getRessource({'type':'patterns','id':data.pattern}
@@ -80,16 +81,31 @@ LOH.Object3D=function(data){
 	this.getPosition=function(){return this.position;}
 	this.getRotation=function(){return this.rotation;}
 }
-
+LOH.EntityInfo=function(data){
+	this.addInfo=function(data){
+		for(i in data)
+			info[i]=data[i]
+	}
+	info=data;
+}
 
 LOH.Entity=function(data){
 	LOH.Object3D.call(this,data);
+	this.setInfo=function(info){
+		if(this.info)
+			this.info.addInfo(info)
+		else
+			this.info=new EntityInfo(info)
+	}
+	
+	if(data.info)
+		this.setInfo(data.info);
 	
 	var move=new Vec4();
 	if(data.move)
 		move.copy(data.move);
 	var rotationmove=data.rotationmove||0;
-	var speed=data.speed||0.1;
+	this.speed=data.speed||0.1;
 	var rotationspeed=data.rotationspeed||0.001;
 	
 	this.update=function(dt){
@@ -118,7 +134,7 @@ LOH.Entity=function(data){
 							// dist=(dist>0)?1:-1;
 						// tmp_move.y=dist;
 					// }
-					 this.position.addSelf(tmp_move.normalize().multiplyScalar(dt*speed));
+					 this.position.addSelf(tmp_move.normalize().multiplyScalar(dt*this.speed));
 				// }
 			// }
 		}else{
@@ -128,6 +144,8 @@ LOH.Entity=function(data){
 	}
 	
 	this.synchronize=function(syncdata,dt){
+		if(data.info)
+			this.setInfo(data.info);
 		this.position.copy(syncdata.position);
 		this.rotation.copy(syncdata.rotation);
 		move.copy(syncdata.move);
@@ -137,7 +155,7 @@ LOH.Entity=function(data){
 		this.rotation.getRotationFromMatrix( mat );
 		tmp_move=mat.crossVector(move);
 		tmp_move.w=0;
-		this.position.addSelf(tmp_move.normalize().multiplyScalar(dt*speed))
+		this.position.addSelf(tmp_move.normalize().multiplyScalar(dt*this.speed))
 	}
 	//geter
 	this.getMove=function(){return move;}

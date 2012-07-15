@@ -44,16 +44,8 @@ LOH.thirdPersonCamera=function(world,input){
 				projector.unprojectVector( vector, camera );
 
 				var ray = new THREE.Ray( camera.position, vector.subSelf( camera.position ).normalize() );
+				world.changeSelection(ray)
 
-				var intersects = ray.intersectObjects( world.scene.__objects );
-
-				if ( intersects.length > 0 ) {
-					for(i=0;i<intersects.length;i++)
-						if(intersects[ 0 ].object.visible){
-							world.changeSelection(intersects[ 0 ].object)
-							break;
-						}
-				}
 			}
 		}else{
 			mouseLDown=false;
